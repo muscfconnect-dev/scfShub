@@ -1,0 +1,58 @@
+[
+  {
+    "filename": "mu-campus.jpg",
+    "url": "https://madukauniversity.edu.ng/images/main.jpg",
+    "bytes": 627400,
+    "status": "ok",
+    "optimized_filename": "mu-students.webp",
+    "optimized_bytes": 112338,
+    "description": "Students outdoors; image published on the official website",
+    "attribution": "Maduka University official website",
+    "source_page": "https://madukauniversity.edu.ng/campus-life"
+  },
+  {
+    "filename": "mu-slider-1.jpg",
+    "url": "https://madukauniversity.edu.ng/images/slider/1.jpg",
+    "bytes": 397990,
+    "status": "ok",
+    "optimized_filename": "mu-garden.webp",
+    "optimized_bytes": 194752,
+    "description": "Aerial campus garden and paths",
+    "attribution": "Maduka University official website",
+    "source_page": "https://madukauniversity.edu.ng/campus-life"
+  },
+  {
+    "filename": "mu-slider-2.jpg",
+    "url": "https://madukauniversity.edu.ng/images/slider/2.jpg",
+    "bytes": 384045,
+    "status": "ok",
+    "optimized_filename": "mu-hostels.webp",
+    "optimized_bytes": 175342,
+    "description": "Aerial campus accommodation buildings",
+    "attribution": "Maduka University official website",
+    "source_page": "https://madukauniversity.edu.ng/campus-life"
+  },
+  {
+    "filename": "mu-slider-3.jpg",
+    "url": "https://madukauniversity.edu.ng/images/slider/3.jpg",
+    "bytes": 279423,
+    "status": "ok",
+    "optimized_filename": "mu-buildings.webp",
+    "optimized_bytes": 125154,
+    "description": "Aerial campus university buildings",
+    "attribution": "Maduka University official website",
+    "source_page": "https://madukauniversity.edu.ng/campus-life"
+  },
+  {
+    "filename": "mu-orientation.webp",
+    "alias_of": "mu-buildings.webp",
+    "description": "Substitute campus buildings photo; not an orientation event photo.",
+    "attribution": "Maduka University official website"
+  },
+  {
+    "filename": "mu-symposium.webp",
+    "alias_of": "mu-students.webp",
+    "description": "Substitute students outdoors photo; not a symposium event photo.",
+    "attribution": "Maduka University official website"
+  }
+]

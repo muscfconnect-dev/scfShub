@@ -1,0 +1,57 @@
+{
+  "source": "Uploaded original design files",
+  "photos_recovered": false,
+  "reason": "Referenced private chatgpt.site image requests return HTTP 403; uploads contain no data:image base64 bytes.",
+  "assets": [
+    {
+      "filename": "mu-garden.webp",
+      "purpose": "Homepage Love Garden hero",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/mu-garden.webp"
+    },
+    {
+      "filename": "mu-orientation.webp",
+      "purpose": "Homepage feature update / university entrance",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/mu-orientation.webp"
+    },
+    {
+      "filename": "mu-campus.webp",
+      "purpose": "Campus overview / explore cards",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/mu-campus.webp"
+    },
+    {
+      "filename": "mu-symposium.webp",
+      "purpose": "Groups and group profile artwork",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/mu-symposium.webp"
+    },
+    {
+      "filename": "mu-senate.webp",
+      "purpose": "News article cover",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/mu-senate.webp"
+    },
+    {
+      "filename": "mu-female-hostel.webp",
+      "purpose": "Freshers guide hostel photograph",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/mu-female-hostel.webp"
+    },
+    {
+      "filename": "food.jpg",
+      "purpose": "Campus food listing and feature cards",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/food.jpg"
+    },
+    {
+      "filename": "coffee.jpg",
+      "purpose": "Drink listing/profile",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/coffee.jpg"
+    },
+    {
+      "filename": "library.jpg",
+      "purpose": "Academic archive / review cards",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/library.jpg"
+    },
+    {
+      "filename": "basketball.jpg",
+      "purpose": "Sport listings, all sport detail pages, news",
+      "original_url": "https://scf-students-hub.kingdavieseke.chatgpt.site/assets/basketball.jpg"
+    }
+  ]
+}

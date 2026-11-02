@@ -1,0 +1,339 @@
+/* ==========================================================================
+   Motion & feedback: scroll reveals, entrances, hover / press states, form feedback.
+   Everything here is progressive: no JS needed to see content, and
+   prefers-reduced-motion switches it all off at the bottom of the file.
+   ========================================================================== */
+
+/* ---------- Scroll reveal (class added by <Reveal> only for below-the-fold content) ---------- */
+.rv {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+}
+.rv.rv-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease var(--rv-delay, 0s),
+    transform 0.75s var(--ease-out) var(--rv-delay, 0s);
+}
+
+.rv.rv-in.rv-skip {
+  transition: none;
+}
+
+/* ---------- Entrances on first paint of every page ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-12deg);
+  }
+  70% {
+    transform: scale(1.06) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-intro .breadcrumb,
+.page-intro h1,
+.page-intro .lede {
+  animation: rise 0.8s var(--ease-out) both;
+}
+.page-intro h1 {
+  animation-delay: 0.08s;
+}
+.page-intro .lede {
+  animation-delay: 0.16s;
+}
+.home-hero-copy > * {
+  animation: rise 0.9s var(--ease-out) both;
+}
+.home-hero-copy > :nth-child(2) {
+  animation-delay: 0.1s;
+}
+.home-hero-copy > :nth-child(3) {
+  animation-delay: 0.2s;
+}
+.home-hero-copy > :nth-child(4) {
+  animation-delay: 0.3s;
+}
+.home-campus-photo {
+  animation: rise 1s var(--ease-out) 0.15s both;
+}
+.home-design-stamp {
+  animation: pop 0.9s var(--ease-spring) 0.7s both;
+}
+
+/* ---------- Cards, tiles and list rows: lift on hover, press on tap ---------- */
+.card,
+.official-link-card,
+.explore-index-card,
+.home-life-card,
+.course-review-card,
+.trip,
+.resource,
+.detail-side-card,
+.home-quick-grid > div > a,
+.curriculum-archive-link {
+  transition:
+    transform 0.4s var(--ease-out),
+    box-shadow 0.4s var(--ease-out),
+    border-color 0.3s,
+    background-color 0.3s;
+}
+@media (hover: hover) {
+  .card:hover,
+  .official-link-card:hover,
+  .explore-index-card:hover,
+  .home-life-card:hover,
+  .trip:hover,
+  .resource:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 22px 44px -18px rgba(16, 31, 66, 0.28);
+  }
+  .home-quick-grid > div > a:hover {
+    transform: translateY(-3px);
+  }
+}
+.card:active,
+.official-link-card:active,
+.explore-index-card:active,
+.home-quick-grid > div > a:active {
+  transform: scale(0.985);
+  transition-duration: 0.12s;
+}
+.card img,
+.home-life-card img,
+.explore-index-card img {
+  transition: transform 0.9s var(--ease-out);
+}
+.card:hover img,
+.home-life-card:hover img {
+  transform: scale(1.06);
+}
+.home-quick-grid > div > a svg,
+.home-notice-list svg {
+  transition: transform 0.4s var(--ease-spring);
+}
+.home-quick-grid > div > a:hover svg {
+  transform: scale(1.18) rotate(-6deg);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  transition:
+    transform 0.3s var(--ease-spring),
+    box-shadow 0.3s,
+    background 0.25s,
+    color 0.25s,
+    border-color 0.25s,
+    opacity 0.25s;
+}
+@media (hover: hover) {
+  .btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px -10px rgba(16, 31, 66, 0.45);
+  }
+}
+.btn:not(:disabled):active {
+  transform: scale(0.96);
+  box-shadow: none;
+}
+.btn:disabled {
+  opacity: 0.75;
+  cursor: progress;
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Tabs & chips ---------- */
+.tabs a,
+.tabs button,
+.chips .chip,
+.scroll-tabs button {
+  transition:
+    background 0.3s,
+    color 0.3s,
+    border-color 0.3s,
+    transform 0.3s var(--ease-spring);
+}
+.tabs a:active,
+.tabs button:active,
+.chips .chip:active,
+.scroll-tabs button:active {
+  transform: scale(0.94);
+}
+/* ---------- Form feedback ---------- */
+.field,
+select.field,
+textarea.field {
+  transition:
+    border-color 0.25s,
+    box-shadow 0.3s,
+    background 0.25s;
+}
+.field:focus,
+.field:focus-visible {
+  outline: none;
+  border-color: #b78520;
+  box-shadow: 0 0 0 4px rgba(229, 189, 94, 0.38);
+}
+.field:user-invalid {
+  border-color: #c4442f;
+  box-shadow: 0 0 0 4px rgba(196, 68, 47, 0.14);
+  animation: shake 0.4s ease;
+}
+.form-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: notice-in 0.5s var(--ease-out) both;
+}
+.form-notice .notice-glyph {
+  flex-shrink: 0;
+  margin-top: 2px;
+  animation: pop 0.6s var(--ease-spring) 0.1s both;
+}
+.form-notice.error {
+  animation:
+    notice-in 0.5s var(--ease-out) both,
+    shake 0.45s ease 0.15s;
+}
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+progress {
+  accent-color: var(--gold);
+}
+
+/* ---------- Accordions (FAQ, guide sections) ---------- */
+details > summary {
+  transition: color 0.25s;
+}
+details > summary svg {
+  transition: transform 0.4s var(--ease-out);
+}
+details[open] > summary svg:last-of-type {
+  transform: rotate(180deg);
+}
+details[open] > :not(summary) {
+  animation: rise 0.45s var(--ease-out) both;
+}
+@supports (interpolate-size: allow-keywords) {
+  details {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size 0.4s var(--ease-out),
+      content-visibility 0.4s allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* ---------- Dialogs (search etc.) ---------- */
+.hub-dialog[open] {
+  animation: dialog-in 0.4s var(--ease-out);
+}
+.hub-dialog::backdrop {
+  background: rgba(14, 26, 56, 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fade 0.35s ease;
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+.search-results > a {
+  transition:
+    padding-left 0.3s var(--ease-out),
+    background 0.25s;
+}
+.search-results > a:hover {
+  padding-left: 10px;
+  background: #f6f7fa;
+}
+
+/* ---------- Print & reduced motion ---------- */
+@media print {
+  .rv {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv,
+  .rv.rv-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .page-intro .breadcrumb,
+  .page-intro h1,
+  .page-intro .lede,
+  .home-hero-copy > *,
+  .home-campus-photo,
+  .home-design-stamp,
+  .form-notice,
+  .form-notice .notice-glyph,
+  .hub-dialog[open],
+  details[open] > :not(summary) {
+    animation: none;
+  }
+  .card:hover,
+  .btn:hover,
+  .official-link-card:hover,
+  .explore-index-card:hover {
+    transform: none;
+  }
+}
