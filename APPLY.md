@@ -1,10 +1,21 @@
-# UI polish patch
+# SCF Students' Hub: UI polish patch (v2, includes v1)
 
-Copy the `src/` folder over your project (same paths), then run `npm run typecheck && npm run dev`.
+Copy `src/` and `supabase/` over your project (same paths), then:
 
-New files: `src/components/site-shell.tsx`, `src/app/shell.css`, `src/app/motion.css`
-Changed:   `hub.tsx`, `ui.tsx`, `layout.tsx`, and `reference.css` / `refinement.css` / `globals.css`
-           (only dead footer / old hamburger / global `nav` rules were removed from these three).
+    npm run typecheck && npm run dev
 
-Sliding tab highlight: `useTabGlider` in `ui.tsx`, used by `AcademicTabs` and the category chips in `hub.tsx`.
-Hamburger + pill-without-links breakpoint is 1000px (shell.css and the `min-width: 1001px` check in MenuSheet).
+Run `supabase/migrations/202611020001_complaint_page_copy.sql` on your database (it only touches
+page headings that still have the old seed text).
+
+## New
+- `src/components/site-shell.tsx`  header, scroll pill, hamburger, full-screen menu, footer, route progress
+- `src/components/select.tsx`      custom dropdown (drop-in for <select>: same <option> children, name, required, value/onChange)
+- `src/lib/school.ts`              the university's published contacts + "checked on" date. EDIT THIS when you re-check the school site
+- `src/app/shell.css`, `src/app/motion.css`
+
+## Changed
+- hub.tsx: new Freshers page, new OfficialLinks page, simplified complaint form (Support), sliding tab highlight, all <select> -> <Select>
+- ui.tsx: scroll reveal, useTabGlider, Notice icons, useCatalog `complete` flag (hides "Load more" when everything is loaded)
+- admin.tsx, course-catalogue.tsx: <select> -> <Select>
+- domain.ts: complaint `name` is optional (defaults to "Student") because the form no longer asks for it
+- layout.tsx, reference.css, refinement.css, globals.css: imports and dead-rule removal

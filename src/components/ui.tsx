@@ -433,10 +433,11 @@ export function Captcha({ onToken }: { onToken: (token: string) => void }) {
   ) : null;
 }
 
-export function useCatalog(initial: any[], query: string) {
+export function useCatalog(initial: any[], query: string, complete = false) {
   const [records, setRecords] = useState<any[]>(initial),
     [busy, setBusy] = useState(false),
-    [done, setDone] = useState(false),
+    // `complete`: the page already received every row, so there is nothing to load.
+    [done, setDone] = useState(complete),
     [error, setError] = useState("");
   async function load() {
     setBusy(true);

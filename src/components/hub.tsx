@@ -15,6 +15,7 @@ import {
   MapPin,
   ChevronDown,
   ChevronRight,
+  CircleCheck,
   FileText,
   ShieldCheck,
   ShoppingBag,
@@ -26,6 +27,12 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { HubData } from "@/lib/server";
 import { money, type Entry, type Review, type Trip } from "@/lib/domain";
+import {
+  OFFICIAL_CHECKED_ON,
+  SCHOOL_CONTACT,
+  SCHOOL_SITE,
+  toTel,
+} from "@/lib/school";
 import {
   api,
   Reveal,
@@ -39,6 +46,7 @@ import {
   useTabGlider,
   More,
 } from "./ui";
+import { Select } from "./select";
 import { Recovery } from "./private-thread";
 import { CourseCatalogue } from "./course-catalogue";
 import {
@@ -93,11 +101,11 @@ const pages: Record<string, [string, string]> = {
   ],
   "ask-scf": [
     "Need help? Ask us.",
-    "Something bothering you in school? Tell SCF what’s going on.",
+    "Something bothering you in school? Tell SCF what’s going on, or point us towards something that needs fixing.",
   ],
   issues: [
-    "Something off with your academics?",
-    "Explain the issue privately so SCF can help you find a way forward.",
+    "Something wrong? Let’s hear it.",
+    "Having trouble with registration, a result or a course? Explain what’s happening so SCF can follow it up.",
   ],
   "hostel-complaints": [
     "Hostel wahala? Tell us.",
@@ -549,7 +557,7 @@ function FilterSelect({
   return (
     <label>
       {label}
-      <select
+      <Select
         className="field"
         value={value}
         onChange={(e) => set(e.target.value)}
@@ -564,7 +572,7 @@ function FilterSelect({
         {options.map((v) => (
           <option key={v}>{v}</option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }
@@ -679,7 +687,7 @@ function AcademicList({
           {reviews ? (
             <label>
               Sort by
-              <select
+              <Select
                 className="field"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
@@ -687,7 +695,7 @@ function AcademicList({
                 <option value="recent">Most recent</option>
                 <option value="rating">Highest rated</option>
                 <option value="name">Course name A–Z</option>
-              </select>
+              </Select>
             </label>
           ) : (
             <FilterSelect
@@ -943,16 +951,16 @@ function ReviewForm({
             </label>
             <label>
               Level
-              <select name="level" required defaultValue={initial?.level || ""}>
+              <Select name="level" required defaultValue={initial?.level || ""}>
                 <option value="">Choose a level</option>
                 {["100", "200", "300", "400", "500", "600"].map((v) => (
                   <option key={v}>{v}</option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label>
               Difficulty
-              <select name="difficulty">
+              <Select name="difficulty">
                 {[
                   "Easy",
                   "Manageable",
@@ -962,7 +970,7 @@ function ReviewForm({
                 ].map((v) => (
                   <option key={v}>{v}</option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label>
               Study time per week
@@ -982,14 +990,14 @@ function ReviewForm({
         </label>
         <label>
           Overall experience
-          <select name="rating" required>
+          <Select name="rating" required>
             <option value="">Choose a rating</option>
             {[5, 4, 3, 2, 1].map((v) => (
               <option key={v} value={v}>
                 {v}/5
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       </div>
       <label>
@@ -1038,6 +1046,7 @@ function ContentList({
   const catalog = useCatalog(
     data.entries.filter((e) => e.kind === kind),
     `kind=${kind}`,
+    data.entries.length < 500,
   );
   const entries = catalog.records.filter(
     (e) =>
@@ -1066,7 +1075,7 @@ function ContentList({
           onChange={(e) => setQ(e.target.value)}
         />
         {kind === "place" && (
-          <select
+          <Select
             aria-label="Starting price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -1075,7 +1084,7 @@ function ContentList({
             <option value="1000">Starts at ₦1,000 or less</option>
             <option value="2000">Starts at ₦2,000 or less</option>
             <option value="5000">Starts at ₦5,000 or less</option>
-          </select>
+          </Select>
         )}
       </div>
       <div
@@ -1447,81 +1456,344 @@ function Detail({ data, entry: e }: { data: HubData; entry: Entry }) {
     </>
   );
 }
-function Freshers({ data }: { data: HubData }) {
-  const guides = data.entries.filter((e) => e.kind === "guide");
+const guideIcons = [
+  Bus,
+  CircleCheck,
+  FileText,
+  HomeIcon,
+  LinkIcon,
+  FileText,
+  BookOpen,
+  MessageCircle,
+];
+function ExternalNote() {
+  return <span className="sr-only"> (official website, opens in a new tab)</span>;
+}
+function OfficialLinks({ data }: { data: HubData }) {
+  const [q, setQ] = useState(""),
+    [category, setCategory] = useState("");
+  const catalog = useCatalog(
+    data.entries.filter((e) => e.kind === "link"),
+    "kind=link",
+    data.entries.length < 500,
+  );
+  const links = catalog.records.filter((e) =>
+    ["directory", "whatsapp"].includes(e.data.placement),
+  );
+  const categories = unique(links.map((e) => e.data.category));
+  const list = links.filter(
+    (e) =>
+      `${e.title} ${e.summary} ${e.data.instructions || ""} ${e.data.category}`
+        .toLowerCase()
+        .includes(q.trim().toLowerCase()) &&
+      (!category || e.data.category === category),
+  );
+  const urlOf = (slug: string, fallback: string) =>
+    links.find((e) => e.slug === slug)?.data.url || fallback;
   return (
     <>
-      <div className="guide-layout">
-        <aside className="guide-nav">
-          <h2>Start here.</h2>
-          {guides.map((e) => (
-            <a key={e.id} href={`#guide-${e.slug}`}>
-              {e.title}
+      <div className="official-source-note">
+        <p>
+          <b>From Maduka University’s official website.</b> Links checked
+          against the published website on {OFFICIAL_CHECKED_ON}. Requirements
+          can change; read the current official instructions before acting.
+        </p>
+        <a href={SCHOOL_SITE} target="_blank" rel="noopener noreferrer">
+          Visit Maduka’s website
+          <ExternalNote />
+        </a>
+      </div>
+      <div className="filters">
+        <label className="sr-only" htmlFor="school-link-search">
+          Search school links
+        </label>
+        <input
+          id="school-link-search"
+          type="search"
+          placeholder="Search for a portal, form, result or contact…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <Select
+          aria-label="Filter school links by category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">All school links</option>
+          {categories.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
+        </Select>
+      </div>
+      <p className="result-count" role="status" aria-live="polite">
+        {list.length} official {list.length === 1 ? "link" : "links"}
+      </p>
+      {!list.length && (
+        <Empty
+          title="No matching links."
+          text="Try “forms”, “results”, “fees” or clear the category filter."
+        />
+      )}
+      <div className="official-link-grid">
+        {list.map((e) => (
+          <Reveal key={e.id}>
+            <article className="official-link-card">
+              <h2>{e.title}</h2>
+              <p>{e.summary}</p>
+              {e.data.instructions && (
+                <div className="where-to-click">
+                  <b>Where to click</b>
+                  <p>{e.data.instructions}</p>
+                </div>
+              )}
+              <a
+                className="btn navy"
+                href={e.data.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open {e.title.toLowerCase()}
+                <ExternalNote />
+              </a>
+            </article>
+          </Reveal>
+        ))}
+      </div>
+      <More catalog={catalog} />
+      <section className="school-contact-panel">
+        <div>
+          <h2>Still need someone to ask?</h2>
+          <p>Use the university’s published contacts for official help.</p>
+          <address>{SCHOOL_CONTACT.address}</address>
+        </div>
+        <div className="school-contact-options">
+          <a href={`mailto:${SCHOOL_CONTACT.generalEmail}`}>
+            General enquiries: {SCHOOL_CONTACT.generalEmail}
+          </a>
+          <a href={`mailto:${SCHOOL_CONTACT.admissionsEmail}`}>
+            Admissions: {SCHOOL_CONTACT.admissionsEmail}
+          </a>
+          {SCHOOL_CONTACT.phones.map((n) => (
+            <a key={n} href={toTel(n)}>
+              {n}
             </a>
           ))}
+          <a
+            className="link"
+            href={urlOf("contact", `${SCHOOL_SITE}/contact`)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View official contact page
+            <ExternalNote />
+          </a>
+        </div>
+      </section>
+      <p className="school-source-footer">
+        Sources:{" "}
+        <a
+          className="source-link"
+          href={urlOf("contact", `${SCHOOL_SITE}/contact`)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Contact page
+        </a>{" "}
+        ·{" "}
+        <a
+          className="source-link"
+          href={urlOf("portal", "https://portal.madukauniversity.edu.ng/login")}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Student portal
+        </a>{" "}
+        ·{" "}
+        <a
+          className="source-link"
+          href={urlOf("prospectus", `${SCHOOL_SITE}/prospectus`)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Prospectus
+        </a>{" "}
+        ·{" "}
+        <a href={SCHOOL_SITE} target="_blank" rel="noopener noreferrer">
+          University website
+        </a>
+        . Some services require school login details. SCF Students’ Hub is
+        separate from these university systems.
+      </p>
+    </>
+  );
+}
+function Freshers({ data }: { data: HubData }) {
+  const guides = data.entries.filter((e) => e.kind === "guide");
+  const slugs = guides.map((e) => e.slug).join("|");
+  const [open, setOpen] = useState(guides[0]?.slug ?? "");
+  const urlOf = (slug: string) =>
+    data.entries.find((e) => e.kind === "link" && e.slug === slug)?.data.url;
+  useEffect(() => {
+    // Deep links such as /freshers#guide-fees-payments open that section.
+    const fromHash = () => {
+      const m = location.hash.match(/^#guide-(.+)$/);
+      if (m && slugs.split("|").includes(m[1])) setOpen(m[1]);
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, [slugs]);
+  return (
+    <>
+      <div className="official-source-note">
+        <p>
+          <b>Start with the school’s instructions.</b> This guide points you to
+          Maduka’s official information. Checked on {OFFICIAL_CHECKED_ON};
+          always read the latest requirements for your session.
+        </p>
+        <Link className="btn navy" href="/school-links">
+          All school links
+        </Link>
+      </div>
+      <div className="guide-layout">
+        <aside className="guide-nav" aria-label="Freshers’ guide sections">
+          {guides.map((e, i) => {
+            const Icon = guideIcons[i % guideIcons.length];
+            return (
+              <a
+                key={e.id}
+                href={`#guide-${e.slug}`}
+                className={open === e.slug ? "current" : ""}
+                aria-current={open === e.slug ? "true" : undefined}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  setOpen(e.slug);
+                  history.replaceState(null, "", `#guide-${e.slug}`);
+                  requestAnimationFrame(() =>
+                    document
+                      .getElementById(`guide-${e.slug}`)
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+                  );
+                }}
+              >
+                <Icon className="hub-icon" aria-hidden="true" />
+                <span>{e.title}</span>
+              </a>
+            );
+          })}
         </aside>
         <div>
+          <Image
+            className="sport-banner"
+            src="/assets/mu-hostels.webp"
+            alt="A hostel building at Maduka University"
+          />
           {!guides.length && (
             <Empty
               title="The guide is being prepared."
               text="Use the official school links or ask SCF while we add verified guidance."
             />
           )}
-          {guides.map((e) => (
-            <details
-              id={`guide-${e.slug}`}
-              key={e.id}
-              className="motion-details"
-            >
-              <summary>
-                <span className="summary-icon">
-                  <BookOpen />
-                </span>
-                {e.title}
-                <ChevronDown />
-              </summary>
-              <div className="guide-body">
-                <p>{e.summary}</p>
-                <Paragraphs text={e.body} />
-                {e.data.link_url && (
-                  <a
-                    className="btn outline"
-                    href={e.data.link_url}
-                    target={
-                      e.data.link_url.startsWith("/") ? undefined : "_blank"
-                    }
-                    rel="noreferrer"
-                  >
-                    {e.data.link_label || "Find out more"}
-                  </a>
-                )}
-                {e.slug.includes("help") && (
-                  <Link className="btn navy" href="/ask-scf">
-                    Ask us
-                  </Link>
-                )}
-                {e.slug.includes("learning") && (
-                  <Link className="link" href="/archive">
-                    Academic Archive
-                  </Link>
-                )}
-                {e.slug.includes("hostel") && (
-                  <Link className="link" href="/hostel-complaints">
-                    Hostel complaints & rules
-                  </Link>
-                )}
-              </div>
-            </details>
-          ))}
+          {guides.map((e, i) => {
+            const Icon = guideIcons[i % guideIcons.length];
+            return (
+              <details
+                id={`guide-${e.slug}`}
+                key={e.id}
+                className="motion-details"
+                open={open === e.slug}
+                onToggle={(ev) => {
+                  const isOpen = ev.currentTarget.open;
+                  setOpen((cur) =>
+                    isOpen ? e.slug : cur === e.slug ? "" : cur,
+                  );
+                }}
+              >
+                <summary>
+                  <span className="summary-icon">
+                    <Icon className="hub-icon" aria-hidden="true" />
+                  </span>
+                  <span className="summary-label">{e.title}</span>
+                </summary>
+                <div className="accordion-content guide-body">
+                  <p>{e.summary}</p>
+                  <Paragraphs text={e.body} />
+                  <div className="guide-official-link">
+                    {e.data.link_url && (
+                      <a
+                        className="btn navy"
+                        href={e.data.link_url}
+                        target={
+                          e.data.link_url.startsWith("/") ? undefined : "_blank"
+                        }
+                        rel="noopener noreferrer"
+                      >
+                        {e.data.link_label || "Find out more"}
+                        {!e.data.link_url.startsWith("/") && <ExternalNote />}
+                      </a>
+                    )}
+                    {e.slug.includes("portal") && urlOf("results") && (
+                      <a
+                        className="btn outline"
+                        href={urlOf("results")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open the results portal
+                        <ExternalNote />
+                      </a>
+                    )}
+                    {e.slug.includes("learning") && urlOf("library") && (
+                      <a
+                        className="btn outline"
+                        href={urlOf("library")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Find library resources
+                        <ExternalNote />
+                      </a>
+                    )}
+                    {e.slug.includes("hostel") && (
+                      <Link className="btn outline" href="/hostel-complaints">
+                        Hostel complaints
+                      </Link>
+                    )}
+                    {e.slug.includes("help") && (
+                      <Link className="btn outline" href="/ask-scf">
+                        Ask us
+                      </Link>
+                    )}
+                  </div>
+                  {e.slug.includes("learning") && (
+                    <p>
+                      <Link className="link" href="/archive">
+                        Academic Archive
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              </details>
+            );
+          })}
+          <div className="guide-extra-help">
+            <h3>Looking for a room number or a campus shortcut?</h3>
+            <p>
+              We’ll add verified local directions and student tips as SCF
+              confirms them. For now,{" "}
+              <a
+                className="source-link"
+                href={urlOf("contact") || `${SCHOOL_SITE}/contact`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ask the university
+                <ExternalNote />
+              </a>{" "}
+              for exact office locations and accommodation help.
+            </p>
+          </div>
         </div>
-      </div>
-      <div className="support-shortcuts">
-        <Link className="btn navy" href="/school-links">
-          All official school links
-        </Link>
-        <Link className="btn outline" href="/ask-scf">
-          Ask SCF
-        </Link>
       </div>
     </>
   );
@@ -1549,11 +1821,11 @@ function Support({
         ]
       : kind === "academic"
         ? [
+            "Course registration",
             "Results or assessment",
-            "Registration",
-            "Teaching or timetable",
-            "Course materials",
-            "Other academic issue",
+            "Timetable clash",
+            "Learning resources",
+            "Other academic concern",
           ]
         : [
             "Student welfare",
@@ -1563,18 +1835,41 @@ function Support({
             "Other concern",
           ];
   const rules = data.entries.filter((e) => e.kind === "rule");
+  const heading =
+    kind === "hostel"
+      ? "Make a hostel complaint."
+      : kind === "academic"
+        ? "Raise an academic issue."
+        : "Tell us what’s up.";
+  const faq = (Icon: typeof ShieldCheck, title: string, text: string) => (
+    <details className="motion-details">
+      <summary>
+        <span className="summary-icon">
+          <Icon className="hub-icon" aria-hidden="true" />
+        </span>
+        <span className="summary-label">{title}</span>
+      </summary>
+      <div className="accordion-content">
+        <p>{text}</p>
+      </div>
+    </details>
+  );
   return (
     <>
       <div className="scf-support-banner">
-        <MessageCircle />
         <div>
-          <h2>We’re listening.</h2>
-          <p>{data.settings.support_message}</p>
+          <span className="support-dot" aria-hidden="true" />
+          <b>SCF support, 24/7.</b>
         </div>
+        <p>
+          You can reach us any time. The first available member of the team can
+          pick up your complaint and reply.
+        </p>
       </div>
       {kind === "hostel" && (
-        <section className="hostel-rules-panel">
+        <section className="hostel-rules-panel" id="hostel-rules">
           <h2>Hostel rules.</h2>
+          <p>Read the rules here, or go straight to the complaint form below.</p>
           {rules.length ? (
             rules.map((e) => (
               <article key={e.id}>
@@ -1598,60 +1893,103 @@ function Support({
               </article>
             ))
           ) : (
-            <p>
-              No hostel rules uploaded yet. You can still raise a complaint
-              below.
-            </p>
+            <div className="rules-empty">
+              <b>No hostel rules uploaded yet.</b>
+              <p>
+                SCF will add the approved documents here. You can still raise a
+                complaint below.
+              </p>
+            </div>
           )}
+          <div className="guide-official-link">
+            <a
+              className="btn outline"
+              href={`${SCHOOL_SITE}/prospectus`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Read the university prospectus
+              <ExternalNote />
+            </a>
+            <a className="btn navy" href="#complaint-form-heading">
+              Make a hostel complaint
+            </a>
+          </div>
         </section>
       )}
       <div className="complaint-layout">
         <aside className="complaint-side">
-          <h2>Here’s how it works.</h2>
-          <ul className="support-steps">
-            <li>
-              <MessageCircle />
-              Tell us what happened.
-            </li>
-            <li>
-              <ShieldCheck />
-              Verify your email to open your private case.
-            </li>
-            <li>
-              <Users />
-              An available SCF member picks it up and replies.
-            </li>
-          </ul>
+          <h2>We’re listening.</h2>
           <p>
-            Authorised SCF members receive an email notification. Your complaint
-            details stay in the secured inbox.
+            Every SCF member is notified when you raise a complaint, so the
+            first one available can pick it up.
           </p>
-          <div className="support-shortcuts">
-            <Link className="link" href="/issues">
-              Academic complaints
-            </Link>
-            <Link className="link" href="/hostel-complaints">
-              Hostel complaints
-            </Link>
-            <Link className="link" href="/school-links">
-              Need the university directly?
-            </Link>
-          </div>
+          <ol>
+            <li>Tell us what happened.</li>
+            <li>Confirm your email to open your private case.</li>
+            <li>We reply through your case and email.</li>
+          </ol>
+          <p>
+            The member handling it will be shown on the case so you don’t get
+            crossed replies.
+          </p>
+          {kind === "general" && (
+            <div className="complaint-other-routes">
+              <Link className="btn outline" href="/issues">
+                Academic complaints
+              </Link>
+              <Link className="btn outline" href="/hostel-complaints">
+                Hostel complaints
+              </Link>
+            </div>
+          )}
+          <a
+            className="link"
+            href={`${SCHOOL_SITE}/contact`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Need the university directly?
+            <ExternalNote />
+          </a>
         </aside>
         <div>
+          <h2 id="complaint-form-heading">{heading}</h2>
           {message ? (
-            <Notice>{message}</Notice>
+            <div className="complaint-confirmation" role="status">
+              <b>Thanks, we’ve got it.</b>
+              <p>{message}</p>
+              <button
+                type="button"
+                className="btn navy"
+                onClick={() => setMessage("")}
+              >
+                Back to the form
+              </button>
+            </div>
           ) : (
             <form
-              className="stack-form scf-complaint-form"
+              className="issue-form scf-complaint-form"
               onSubmit={async (e) => {
                 e.preventDefault();
                 setBusy(true);
                 setError("");
                 try {
+                  const f = Object.fromEntries(new FormData(e.currentTarget)) as Record<
+                    string,
+                    string
+                  >;
+                  const detail = (f.hostel || f.course?.toUpperCase() || "").trim();
                   const v = await api("cases", {
-                    ...Object.fromEntries(new FormData(e.currentTarget)),
                     kind,
+                    category: f.category,
+                    // The subject is built for them, so there is one less box to fill.
+                    subject: detail ? `${f.category} · ${detail}` : f.category,
+                    email: f.email,
+                    message: f.message,
+                    hostel: f.hostel || "",
+                    location: f.location || "",
+                    website: f.website || "",
                     captcha,
                   });
                   setMessage(`${v.message} Your reference is ${v.reference}.`);
@@ -1662,64 +2000,95 @@ function Support({
                 }
               }}
             >
-              <h2>Tell us what’s up.</h2>
-              <div className="form-grid">
-                <label>
-                  Your name
-                  <input name="name" required maxLength={100} />
-                </label>
-                <label>
-                  Your email
-                  <input name="email" type="email" required maxLength={254} />
-                </label>
-              </div>
               <label>
                 What’s it about?
-                <select name="category" required>
+                <Select className="field" name="category" required defaultValue="">
                   <option value="">Choose a category</option>
                   {categories.map((v) => (
                     <option key={v}>{v}</option>
                   ))}
-                </select>
+                </Select>
               </label>
-              <label>
-                Give it a short title
-                <input name="subject" required minLength={3} maxLength={180} />
-              </label>
+              {kind === "academic" && (
+                <label>
+                  Course code, if relevant
+                  <input
+                    className="field"
+                    name="course"
+                    maxLength={30}
+                    placeholder="e.g. COS 101"
+                  />
+                </label>
+              )}
               {kind === "hostel" && (
-                <div className="form-grid">
+                <>
                   <label>
                     Hostel or block
-                    <input name="hostel" required maxLength={120} />
+                    <input
+                      className="field"
+                      name="hostel"
+                      required
+                      maxLength={120}
+                      placeholder="e.g. Block B, Male Hostel"
+                    />
                   </label>
                   <label>
-                    Room or location
-                    <input name="location" maxLength={200} />
+                    Room or location, if relevant
+                    <input
+                      className="field"
+                      name="location"
+                      maxLength={200}
+                      placeholder="e.g. Room 12 or the ground-floor corridor"
+                    />
                   </label>
-                </div>
+                </>
               )}
               <label>
                 Tell us what happened
                 <textarea
+                  className="field"
                   name="message"
                   required
                   minLength={20}
                   maxLength={5000}
-                  rows={6}
+                  placeholder="Explain the issue and what you need help with."
                 />
               </label>
-              <label className="check-label">
-                <input type="checkbox" required />I have read the{" "}
-                <Link href="/privacy" target="_blank">
-                  privacy information
-                </Link>{" "}
-                and agree to SCF using these details to handle my request.
+              <label>
+                Where should we reply?
+                <input
+                  className="field"
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  required
+                  maxLength={254}
+                  placeholder="you@example.com"
+                />
               </label>
               <Honeypot />
               <Captcha onToken={setCaptcha} />
               {error && <Notice error>{error}</Notice>}
               <Submit busy={busy}>Send to SCF</Submit>
+              <p className="form-fine-print">
+                By sending this you agree to SCF using these details to handle
+                your request.{" "}
+                <Link href="/privacy" target="_blank">
+                  Privacy information
+                </Link>
+                .
+              </p>
             </form>
+          )}
+          {faq(
+            ShieldCheck,
+            "Who will see my complaint?",
+            "Authorised SCF members are emailed a notification with a link to the secured complaint inbox. Your details stay in that inbox, with access managed through staff accounts, and one member claims your case before replying.",
+          )}
+          {faq(
+            MessageCircle,
+            "What happens after I send it?",
+            "We email you a link to confirm your address and open your private case page. Keep that email: it is how you follow replies. If you lose it, use the recovery option at the bottom of this page.",
           )}
         </div>
       </div>
@@ -2069,12 +2438,13 @@ export function Hub({ route, data }: { route: string; data: HubData }) {
                     <AcademicList data={data} reviews />
                   ) : route === "freshers" ? (
                     <Freshers data={data} />
+                  ) : route === "school-links" ? (
+                    <OfficialLinks data={data} />
                   ) : [
                       "places",
                       "groups",
                       "sports",
                       "news",
-                      "school-links",
                     ].includes(route) ? (
                     <ContentList
                       key={route}
@@ -2086,7 +2456,6 @@ export function Hub({ route, data }: { route: string; data: HubData }) {
                             groups: "group",
                             sports: "sport",
                             news: "news",
-                            "school-links": "link",
                           } as const
                         )[route as "places"]
                       }

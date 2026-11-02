@@ -348,7 +348,8 @@ export const caseSchema = z.object({
   kind: z.enum(["general", "academic", "hostel"]),
   category: text(120).min(2),
   subject: text(180).min(3),
-  name: text(100).min(2),
+  // The short form no longer asks for a name; staff identify students by verified email.
+  name: text(100).min(2).default("Student"),
   email: z.email().max(254),
   message: text(5000).min(20),
   hostel: text(120).default(""),

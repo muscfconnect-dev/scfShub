@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { api, Modal, Notice, Submit, FileInput, Empty } from "./ui";
+import { Select } from "./select";
 import { makeCourseSlug } from "@/lib/curriculum";
 import {
   defaultSettings,
@@ -1317,7 +1318,7 @@ function EntryEditor({
                   {(kind === "course" || kind === "department") &&
                   f.key === "faculty_id" ? (
                     <>
-                      <select
+                      <Select
                         required
                         value={value.data.faculty_id}
                         onChange={(e) =>
@@ -1340,7 +1341,7 @@ function EntryEditor({
                             {e.status === "draft" ? " (draft)" : ""}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                       {!courseFaculties.length && (
                         <small>Add the faculty under Faculties first.</small>
                       )}
@@ -1352,14 +1353,14 @@ function EntryEditor({
                       onChange={(id) => change(f.key, id)}
                     />
                   ) : f.type === "select" ? (
-                    <select
+                    <Select
                       value={value.data[f.key]}
                       onChange={(e) => change(f.key, e.target.value)}
                     >
                       {f.options!.map((v) => (
                         <option key={v}>{v}</option>
                       ))}
-                    </select>
+                    </Select>
                   ) : f.type === "textarea" || f.type === "lines" ? (
                     <textarea
                       rows={4}
@@ -1421,14 +1422,14 @@ function EntryEditor({
         <div className="form-grid">
           <label>
             Visibility
-            <select
+            <Select
               value={value.status}
               onChange={(e) => update("status", e.target.value)}
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
               <option value="archived">Archived</option>
-            </select>
+            </Select>
           </label>
           <label>
             Display order
@@ -1552,14 +1553,14 @@ function TripEditor({
         </label>
         <label>
           Status
-          <select
+          <Select
             value={v.status}
             onChange={(e) => change("status", e.target.value)}
           >
             {["draft", "published", "closed", "cancelled"].map((s) => (
               <option key={s}>{s}</option>
             ))}
-          </select>
+          </Select>
         </label>
         {v.status === "cancelled" && (
           <Notice>
@@ -1632,14 +1633,14 @@ function StaffEditor({
         </label>
         <label>
           Role
-          <select
+          <Select
             value={v.role}
             onChange={(e) => setV({ ...v, role: e.target.value })}
           >
             {["staff", "admin", "owner"].map((r) => (
               <option key={r}>{r}</option>
             ))}
-          </select>
+          </Select>
         </label>
         <p>
           Owners manage staff access. Admins can manage all website areas. Staff
@@ -1967,11 +1968,11 @@ function CasePanel({
           </label>
           <label>
             Case status
-            <select name="status">
+            <Select name="status">
               <option value="in_progress">In progress</option>
               <option value="resolved">Resolved</option>
               <option value="closed">Closed</option>
-            </select>
+            </Select>
           </label>
           <Submit busy={busy}>Send reply</Submit>
         </form>

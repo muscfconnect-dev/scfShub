@@ -19,6 +19,7 @@ import {
   type CurriculumFilters,
 } from "@/lib/curriculum";
 import { Empty } from "./ui";
+import { Select } from "./select";
 function CourseCatalogueContent({ data }: { data: HubData }) {
   const params = useSearchParams(),
     signature = params.toString();
@@ -90,7 +91,7 @@ function CourseCatalogueContent({ data }: { data: HubData }) {
         <div className="curriculum-filter-grid">
           <label>
             Faculty
-            <select
+            <Select
               value={filters.faculty || ""}
               onChange={(e) => set("faculty", e.target.value)}
             >
@@ -100,11 +101,11 @@ function CourseCatalogueContent({ data }: { data: HubData }) {
                   {f.title}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             Department
-            <select
+            <Select
               value={filters.department || ""}
               onChange={(e) => set("department", e.target.value)}
               disabled={!faculty}
@@ -117,11 +118,11 @@ function CourseCatalogueContent({ data }: { data: HubData }) {
                   {d.title}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             Level
-            <select
+            <Select
               value={filters.level || ""}
               onChange={(e) => set("level", e.target.value)}
             >
@@ -131,11 +132,11 @@ function CourseCatalogueContent({ data }: { data: HubData }) {
                   {v} level
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             Semester
-            <select
+            <Select
               value={filters.semester || ""}
               onChange={(e) => set("semester", e.target.value)}
             >
@@ -143,12 +144,12 @@ function CourseCatalogueContent({ data }: { data: HubData }) {
               {courseSemesters.map((v) => (
                 <option key={v}>{v}</option>
               ))}
-            </select>
+            </Select>
           </label>
           {sessions.length > 0 && (
             <label>
               Academic session
-              <select
+              <Select
                 value={filters.session || ""}
                 onChange={(e) => set("session", e.target.value)}
               >
@@ -156,7 +157,7 @@ function CourseCatalogueContent({ data }: { data: HubData }) {
                 {sessions.map((v) => (
                   <option key={v}>{v}</option>
                 ))}
-              </select>
+              </Select>
             </label>
           )}
         </div>
